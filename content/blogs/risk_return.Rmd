@@ -27,7 +27,6 @@ knitr::opts_chunk$set(
 )
 ```
 
-
 ```{r load-libraries, warning=FALSE, message=FALSE, echo=FALSE}
 library(tidyverse)  # Load ggplot2, dplyr, and all the other tidyverse packages
 library(lubridate)
@@ -41,7 +40,6 @@ library(purrr)
 library(lubridate) #to handle dates
 library(ggrepel)
 ```
-
 
 # Returns of financial stocks
 

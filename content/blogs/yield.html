@@ -15,8 +15,6 @@ title: Yield Curve
 <script src="/rmarkdown-libs/header-attrs/header-attrs.js"></script>
 
 
-<p><img src="/Users/kellyzhang/Desktop/DATACAMP/mywebsite777/images/yield_curve_parable.jpg" width="100%" style="display: block; margin: auto;" /></p>
-<p><img src="/Users/kellyzhang/Desktop/DATACAMP/mywebsite777/images/yield_curve_challenge.png" width="100%" style="display: block; margin: auto;" /></p>
 <pre class="r"><code>yield_curve &lt;- read_csv(here::here(&quot;data&quot;, &quot;yield_curve.csv&quot;))
 
 glimpse(yield_curve)</code></pre>
@@ -31,7 +29,6 @@ glimpse(yield_curve)</code></pre>
 <h2>Plotting the yield curve</h2>
 <div id="yields-on-us-rates-by-duration-since-1960" class="section level3">
 <h3>Yields on US rates by duration since 1960</h3>
-<p><img src="/Users/kellyzhang/Desktop/DATACAMP/mywebsite777/images/yield_curve1.png" width="100%" style="display: block; margin: auto;" /></p>
 <pre class="r"><code>yield_curve  %&gt;% 
   mutate(duration=factor(duration, levels = c(&quot;3-Month Treasury Bill&quot;, &quot;6-Month Treasury Bill&quot;, &quot;9-Month Treasury Bill&quot;, &quot;1-Year Treasury Rate&quot;, &quot;2-Year Treasury Rate&quot;, &quot;3-Year Treasury Rate&quot;, &quot;5-Year Treasury Rate&quot;, &quot;7-Year Treasury Rate&quot;, &quot;10-Year Treasury Rate&quot;, &quot;20-Year Treasury Rate&quot;, &quot;30-Year Treasury Rate&quot;))) %&gt;%
   
@@ -49,7 +46,6 @@ glimpse(yield_curve)</code></pre>
 </div>
 <div id="monthly-yields-on-us-rates-by-duration-since-1999-on-a-year-by-year-basis" class="section level3">
 <h3>Monthly yields on US rates by duration since 1999 on a year-by-year basis</h3>
-<p><img src="/Users/kellyzhang/Desktop/DATACAMP/mywebsite777/images/yield_curve2.png" width="100%" style="display: block; margin: auto;" /></p>
 <pre class="r"><code>yield_curve_2 &lt;- yield_curve  %&gt;%
   mutate(year=factor(year(date)), maturity=factor(maturity, levels=c(&quot;3m&quot;, &quot;6m&quot;,&quot;1y&quot;,&quot;2y&quot;,&quot;3y&quot;,&quot;5y&quot;,&quot;7y&quot;,&quot;10y&quot;,&quot;20y&quot;,&quot;30y&quot;)))
 
@@ -68,8 +64,6 @@ yield_curve_2 %&gt;%
 </div>
 <div id="month-and-10-year-yields-since-1999" class="section level3">
 <h3>3-month and 10-year yields since 1999</h3>
-<pre class="r"><code>knitr::include_graphics(here::here(&quot;images&quot;, &quot;yield_curve3.png&quot;), error = FALSE)</code></pre>
-<p><img src="/Users/kellyzhang/Desktop/DATACAMP/mywebsite777/images/yield_curve3.png" width="100%" style="display: block; margin: auto;" /></p>
 <pre class="r"><code>yield_curve_3 &lt;- yield_curve %&gt;% 
   filter(date&gt;=&quot;1999-01-01&quot;, maturity ==&quot;10y&quot;| maturity==&quot;3m&quot;) %&gt;% 
   mutate(duration= fct_reorder(duration, desc(duration))) %&gt;% 

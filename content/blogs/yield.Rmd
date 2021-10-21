@@ -47,16 +47,8 @@ library(scales) # add to adjust date axis
 library(kableExtra)# add for summary statistics
 ```
 
-```{r yield_curve_parable.jpg, echo=FALSE, out.width="100%"}
-knitr::include_graphics(here::here("images", "yield_curve_parable.jpg"), error = FALSE)
-```
 
-```{r yield_curve_challenge, echo=FALSE, out.width="100%"}
-knitr::include_graphics(here::here("images", "yield_curve_challenge.png"), error = FALSE)
-```
-
-
-```{r download_historical_yield_curve, warning=FALSE}
+```{r download_historical_yield_curve, cache = FALSE, warning=FALSE}
 
 yield_curve <- read_csv(here::here("data", "yield_curve.csv"))
 
@@ -68,10 +60,6 @@ glimpse(yield_curve)
 ## Plotting the yield curve
 
 ### Yields on US rates by duration since 1960
-
-```{r yield_curve_1_graphic, echo=FALSE, out.width="100%"}
-knitr::include_graphics(here::here("images", "yield_curve1.png"), error = FALSE)
-```
 
 ```{r yield_curve_1_group_1, out.width="100%", fig.width = 12, fig.height= 10}
 yield_curve  %>% 
@@ -95,11 +83,6 @@ yield_curve  %>%
 
 ### Monthly yields on US rates by duration since 1999 on a year-by-year basis
 
-
-```{r yield_curve_2_graphic, echo=FALSE, out.width="100%"}
-knitr::include_graphics(here::here("images", "yield_curve2.png"), error = FALSE)
-```
-
 ```{r yield_curve_2_group_1, out.width="100%", fig.width = 12, fig.height = 10}
 yield_curve_2 <- yield_curve  %>%
   mutate(year=factor(year(date)), maturity=factor(maturity, levels=c("3m", "6m","1y","2y","3y","5y","7y","10y","20y","30y")))
@@ -120,10 +103,6 @@ yield_curve_2 %>%
 
 
 ### 3-month and 10-year yields since 1999
-
-```{r yield_curve_3, out.width="100%"}
-knitr::include_graphics(here::here("images", "yield_curve3.png"), error = FALSE)
-```
 
 ```{r yield_curve_31, fig.width=12}
 yield_curve_3 <- yield_curve %>% 
