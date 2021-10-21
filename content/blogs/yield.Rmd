@@ -47,14 +47,12 @@ library(scales) # add to adjust date axis
 library(kableExtra)# add for summary statistics
 ```
 
-
-```{r download_historical_yield_curve, cache = FALSE, warning=FALSE}
+```{r download_historical_yield_curve, echo = FALSE, warning=FALSE}
 
 yield_curve <- read_csv(here::here("data", "yield_curve.csv"))
 
 glimpse(yield_curve)
 ```
-
 
 
 ## Plotting the yield curve
