@@ -85,24 +85,25 @@ params:
         title: About me
         url: blogs/about_me
 
-      - image: stocks.jpg
-        subtitle: Understand the risk return of stocks
-        title: Risk Return of DJIA Industial Average
-        url: blogs/risk_return
+      - image: profile.jpg
+        subtitle: Educational and Professional Experiences
+        title: CV
+        url: blogs/Jialin_Zhang.pdf
+
+      #- image: stocks.jpg
+        #subtitle: Understand the risk return of stocks
+        #title: Risk Return of DJIA Industial Average
+        #url: blogs/risk_return
 
       - image: bike_rentals.jpg
         subtitle: Analysis on the distribution of bike rentals
         title: Excess rentals in TfL bike sharing
         url: blogs/rentals
 
-      - image: profile.jpg
-        subtitle: Educational and Professional Experiences
-        title: CV
-        url: blogs/Jialin_Zhang.pdf
 
       - image: cpi.jpg
         subtitle: How CPI and its components changed over the last few years
-        title: The changes of CPI and its components
+        title: The Changes of CPI and Its Components
         url: blogs/cpi
 
       - image: treasury.jpg
