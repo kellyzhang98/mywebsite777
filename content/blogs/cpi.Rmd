@@ -1,0 +1,166 @@
+---
+categories:  
+- ""    #the front matter should be like the one found in, e.g., blog2.md. It cannot be like the normal Rmd we used
+- ""
+date: "2021-10-20"
+description: How has the CPI and its components changed over the last few years? # the title that will show up once someone gets to this page
+draft: false
+#image: spices.jpg # save picture in \static\img\blogs. Acceptable formats= jpg, jpeg, or png . Your iPhone pics wont work
+
+keywords: ""
+slug: cpi # slug is the shorthand URL address... no spaces plz
+title: The changes of CPI and its components
+---
+
+```{r, setup, include=FALSE}
+knitr::opts_chunk$set(
+  message = FALSE, 
+  warning = FALSE, 
+  tidy=FALSE,     # display code as typed
+  size="small")   # slightly smaller font for code
+options(digits = 3)
+
+# default figure size
+knitr::opts_chunk$set(
+  fig.width=6.75, 
+  fig.height=6.75,
+  fig.align = "center"
+)
+```
+
+
+```{r load-libraries, include=FALSE}
+library(tidyverse)  # Load ggplot2, dplyr, and all the other tidyverse packages
+library(mosaic)
+library(ggthemes)
+library(lubridate)
+library(here)
+library(skimr)
+library(janitor)
+library(httr)
+library(readxl)
+library(vroom)
+library(infer)
+library(kableExtra)
+library(lubridate)
+library(patchwork)
+library(rvest)
+library(scales)
+```
+
+```{r chunk_name, fig.height = 20, fig.width = 40, warnings= FALSE, message=FALSE}
+url <- "https://fredaccount.stlouisfed.org/public/datalist/843"
+
+# get tables that exist on the fread account page
+tables <- url %>%
+  read_html() %>% 
+  html_nodes(css="table")
+
+# parse HTML tables into a dataframe called fredaccount
+# use purr::map() to create a list of all tables in URL
+fredaccount <- map(tables, . %>% 
+             html_table(fill=TRUE)%>% 
+             janitor::clean_names())
+
+# get the full list of CPI components
+cpi_components <- fredaccount[[2]] # the second table on the page contains the list of all CPI components
+tidy_cpi_components <- cpi_components %>%
+  select(series_id:series_id) %>%
+  tidyquant::tq_get(get = "economic.data", from =  "2000-01-01", to = "2021-08-31") %>% # get all data since 2000-01-01
+  mutate(year_change = price/lag(price, 12) - 1) %>% # calculate the yearly change
+  merge(cpi_components, by = "series_id",all = T) %>%
+  mutate(component = str_sub(title,47,-22))
+
+as.character(cpi_components$component) 
+
+glimpse(tidy_cpi_components)
+
+# rank the components so that: 1) CPIAUCSL appears first; 2) the rest is ranked by average year_change since 2016 in a descending order
+  # firstly, rank all components by the final year change
+cpi_components0 <- tidy_cpi_components %>%
+  subset(date == "2021-08-01") %>% # select August 2021 data 
+  group_by(series_id)%>%
+  summarise(average_year_change = mean(year_change,na.rm=TRUE)) %>%
+  arrange(desc(average_year_change)) 
+glimpse(cpi_components0)
+  
+  #secondly, set "All items"(CPIAUCSL) to the first row and create the "order" column
+cpi_components <- rbind(subset(cpi_components0,series_id == "CPIAUCSL"), subset(cpi_components0, series_id != "CPIAUCSL")) %>%
+  mutate(order = (1:49)) %>%
+  merge(subset(tidy_cpi_components,date >= "2016-01-01", by = "series_id")) %>%
+  arrange(order)
+
+# use "factor" to encode a vector in the column "component", so in the plotting stage, the subgroup of the facet graph will be ranked in order
+component_order <- cpi_components %>%
+  select(order,component) %>%
+  unique() %>%
+  arrange(order)
+
+cpi_components$component = factor(cpi_components$component, levels = component_order$component)
+
+# plot
+cpi_components %>%
+  ggplot(aes(x = date, y = year_change, group = component)) +
+  facet_wrap(.~cpi_components$component,scales ="free", ncol = 7)+
+  geom_point(aes(color = factor(sign(year_change))), size = 2)+
+  scale_colour_manual(values = c("#9FC6F1", "black", "#CF7F80"),
+                     breaks = c("-1", "0", "1"))+
+  geom_smooth(aes(color = "#9FC6F1"), se=F)+
+  theme_bw()+
+  theme(legend.position="none")+
+  scale_y_continuous(labels = scales::percent) + 
+  labs(
+  title = "Yearly change of US CPI (All Items) and its components", 
+  subtitle = "YoY change being positive or negative
+  Jan 2016 to Aug 2021",
+  x = "Year", 
+  y = "Yearly Change", 
+  caption = "Data from St. Louis Fed FRED
+       http://fredaccount.stlouisfed.org/public/datalist/843")
+
+```
+
+We chose the subset of Housing, Apparel, Food/Beverage, and Transportation as our subset to analyze as the following groups do not appear in the FRED data: Medical Care, Education/Communication and Recreation.
+
+```{r chunk_name_two, fig.height = 8, warnings = FALSE, message = FALSE, fig.width = 12}
+url2 <- "https://www.bls.gov/cpi/tables/relative-importance/2020.htm"
+
+# get tables that exist on the cpi relative-importance page
+tables2 <- url2 %>%
+  read_html() %>% 
+  html_nodes(css="table")
+
+tables2_1 <- map(tables2, . %>% 
+             html_table(fill=TRUE)%>% 
+             janitor::clean_names())
+
+# rank the selected major categories of CPI components by importance
+cpi_importance <- tables2_1[[1]] %>%
+  slice(2:n()) %>%
+  subset(item_and_group == "Housing"|item_and_group =="Transportation"|item_and_group =="Food and beverages"|item_and_group =="Medical care"|item_and_group =="Education and communication"|item_and_group =="Recreation"|item_and_group =="Apparel") %>%
+  mutate(across(where(is.character), str_trim)) %>%
+  transform(u_s_city_average = as.numeric(u_s_city_average)) %>%
+  arrange(desc(u_s_city_average)) 
+
+# select important components that will be put in the graph 
+cpi_important_components <- cpi_components %>%
+  subset(component == "Housing"|component == "Transportation"|component == "Food and Beverages"|component == "Apparel")
+
+# use "factor" to encode a vector in the column "component", so in the plotting stage, the subgroup of the facet graph will be ranked in order
+cpi_important_components$component = factor(cpi_important_components$component, levels = c("Housing","Transportation","Food and Beverages","Apparel"))
+
+#plot
+cpi_important_components %>%
+  ggplot(aes(x = date, y = year_change, group = component)) +
+  facet_wrap(.~cpi_important_components$component, ncol=2)+
+  geom_point(aes(color = factor(sign(year_change))), size = 2)+
+  scale_colour_manual(values = c("#9FC6F1", "black", "#CF7F80"),
+                     breaks = c("-1", "0", "1"))+
+  geom_smooth(aes(color = "#9FC6F1"), se=F)+
+  theme_economist_white()+
+  theme(legend.position="none")+
+  scale_y_continuous(labels = scales::percent) + labs(title = "Important CPI Components",caption = "Data from Bureau of Labor Statistics", x = "Year", y = "Yearly Change") + theme(axis.title.x = element_text(vjust = -2,size=14, face = "italic"), #adjust axis 
+        axis.title.y = element_text(vjust = 3,size=14, face = "italic"))
+
+```
+
